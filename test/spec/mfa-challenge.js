@@ -109,6 +109,29 @@ define(function(require) {
       });
 
       util.itMakesCorrectRequestResponse({
+        title: 'allows verification with autoPush as a function',
+        setup: {
+          status: 'mfa-challenge-sms',
+          request: {
+            uri: '/api/v1/authn/factors/smsigwDlH85L9FyQK0g3/verify?autoPush=true',
+            data: {
+              stateToken: '00rt1IY9c6Q3RVc4a2jJPbS2uAtFNWJz_d8A26KTdF',
+              passCode: '123456'
+            }
+          },
+          response: 'success'
+        },
+        execute: function (test) {
+          return test.trans.verify({
+            passCode: '123456',
+            autoPush: function () {
+              return true;
+            }
+          });
+        }
+      });
+
+      util.itMakesCorrectRequestResponse({
         title: 'allows verification with autoPush as undefined',
         setup: {
           status: 'mfa-challenge-sms',
@@ -125,6 +148,27 @@ define(function(require) {
           return test.trans.verify({
             passCode: '123456',
             autoPush: undefined
+          });
+        }
+      });
+
+      util.itMakesCorrectRequestResponse({
+        title: 'allows verification with autoPush as null',
+        setup: {
+          status: 'mfa-challenge-sms',
+          request: {
+            uri: '/api/v1/authn/factors/smsigwDlH85L9FyQK0g3/verify',
+            data: {
+              stateToken: '00rt1IY9c6Q3RVc4a2jJPbS2uAtFNWJz_d8A26KTdF',
+              passCode: '123456'
+            }
+          },
+          response: 'success'
+        },
+        execute: function (test) {
+          return test.trans.verify({
+            passCode: '123456',
+            autoPush: null
           });
         }
       });
@@ -190,6 +234,28 @@ define(function(require) {
           return test.trans.verify({
             passCode: '123456',
             autoPush: undefined,
+            rememberDevice: true
+          });
+        }
+      });
+
+      util.itMakesCorrectRequestResponse({
+        title: 'allows verification with autoPush null and rememberDevice true',
+        setup: {
+          status: 'mfa-challenge-sms',
+          request: {
+            uri: '/api/v1/authn/factors/smsigwDlH85L9FyQK0g3/verify?rememberDevice=true',
+            data: {
+              stateToken: '00rt1IY9c6Q3RVc4a2jJPbS2uAtFNWJz_d8A26KTdF',
+              passCode: '123456'
+            }
+          },
+          response: 'success'
+        },
+        execute: function (test) {
+          return test.trans.verify({
+            passCode: '123456',
+            autoPush: null,
             rememberDevice: true
           });
         }
@@ -363,6 +429,50 @@ define(function(require) {
       });
 
       util.itMakesCorrectRequestResponse({
+        title: 'allows polling for push with autoPush as a function',
+        setup: {
+          status: 'mfa-challenge-push',
+          calls: [
+            {
+              request: {
+                uri: '/api/v1/authn/factors/opf492vmb3s1blLTs0h7/verify?autoPush=true',
+                data: {
+                  stateToken: '00T4jcVNRzJy5dkWJ4P7c9051dY3FUYY9O2zvbU_vI'
+                }
+              },
+              response: 'mfa-challenge-push'
+            },
+            {
+              request: {
+                uri: '/api/v1/authn/factors/opf492vmb3s1blLTs0h7/verify?autoPush=true',
+                data: {
+                  stateToken: '00T4jcVNRzJy5dkWJ4P7c9051dY3FUYY9O2zvbU_vI'
+                }
+              },
+              response: 'mfa-challenge-push'
+            },
+            {
+              request: {
+                uri: '/api/v1/authn/factors/opf492vmb3s1blLTs0h7/verify?autoPush=true',
+                data: {
+                  stateToken: '00T4jcVNRzJy5dkWJ4P7c9051dY3FUYY9O2zvbU_vI'
+                }
+              },
+              response: 'success'
+            }
+          ]
+        },
+        execute: function (test) {
+          return test.trans.poll({
+            delay: 0,
+            autoPush: function () {
+              return true;
+            }
+          });
+        }
+      });
+
+      util.itMakesCorrectRequestResponse({
         title: 'does not include autoPush for polling for push if autoPush undefined',
         setup: {
           status: 'mfa-challenge-push',
@@ -400,6 +510,48 @@ define(function(require) {
           return test.trans.poll({
             delay: 0,
             autoPush: undefined
+          });
+        }
+      });
+
+      util.itMakesCorrectRequestResponse({
+        title: 'does not include autoPush for polling for push if autoPush null',
+        setup: {
+          status: 'mfa-challenge-push',
+          calls: [
+            {
+              request: {
+                uri: '/api/v1/authn/factors/opf492vmb3s1blLTs0h7/verify',
+                data: {
+                  stateToken: '00T4jcVNRzJy5dkWJ4P7c9051dY3FUYY9O2zvbU_vI'
+                }
+              },
+              response: 'mfa-challenge-push'
+            },
+            {
+              request: {
+                uri: '/api/v1/authn/factors/opf492vmb3s1blLTs0h7/verify',
+                data: {
+                  stateToken: '00T4jcVNRzJy5dkWJ4P7c9051dY3FUYY9O2zvbU_vI'
+                }
+              },
+              response: 'mfa-challenge-push'
+            },
+            {
+              request: {
+                uri: '/api/v1/authn/factors/opf492vmb3s1blLTs0h7/verify',
+                data: {
+                  stateToken: '00T4jcVNRzJy5dkWJ4P7c9051dY3FUYY9O2zvbU_vI'
+                }
+              },
+              response: 'success'
+            }
+          ]
+        },
+        execute: function (test) {
+          return test.trans.poll({
+            delay: 0,
+            autoPush: null
           });
         }
       });

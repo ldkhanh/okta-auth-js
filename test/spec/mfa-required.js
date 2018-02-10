@@ -150,6 +150,29 @@ define(function(require) {
         }
       });
       util.itMakesCorrectRequestResponse({
+        title: 'passes autoPush as a query param if function returns true',
+        setup: {
+          status: 'mfa-required',
+          request: {
+            uri: '/api/v1/authn/factors/uftigiEmYTPOmvqTS0g3/verify?autoPush=true',
+            data: {
+              stateToken: '004KscPNUS2LswGp26qiu4Hetqt_zcgz-PcQhPseVP',
+              passCode: '123456'
+            }
+          },
+          response: 'success'
+        },
+        execute: function (test) {
+          var factor = _.find(test.trans.factors, {id: 'uftigiEmYTPOmvqTS0g3'});
+          return factor.verify({
+            'passCode': '123456',
+            'autoPush': function() {
+              return true;
+            }
+          });
+        }
+      });
+      util.itMakesCorrectRequestResponse({
         title: 'doesn\'t pass autoPush as a query param if undefined',
         setup: {
           status: 'mfa-required',
@@ -167,6 +190,27 @@ define(function(require) {
           return factor.verify({
             passCode: '123456',
             autoPush: undefined
+          });
+        }
+      });
+      util.itMakesCorrectRequestResponse({
+        title: 'doesn\'t pass autoPush as a query param if null',
+        setup: {
+          status: 'mfa-required',
+          request: {
+            uri: '/api/v1/authn/factors/uftigiEmYTPOmvqTS0g3/verify',
+            data: {
+              stateToken: '004KscPNUS2LswGp26qiu4Hetqt_zcgz-PcQhPseVP',
+              passCode: '123456'
+            }
+          },
+          response: 'success'
+        },
+        execute: function (test) {
+          var factor = _.find(test.trans.factors, {id: 'uftigiEmYTPOmvqTS0g3'});
+          return factor.verify({
+            passCode: '123456',
+            autoPush: null
           });
         }
       });
@@ -232,6 +276,28 @@ define(function(require) {
           return factor.verify({
             passCode: '123456',
             autoPush: undefined,
+            rememberDevice: true
+          });
+        }
+      });
+      util.itMakesCorrectRequestResponse({
+        title: 'passes rememberDevice as a query param if autoPush is null and rememberDevice is true',
+        setup: {
+          status: 'mfa-required',
+          request: {
+            uri: '/api/v1/authn/factors/uftigiEmYTPOmvqTS0g3/verify?rememberDevice=true',
+            data: {
+              stateToken: '004KscPNUS2LswGp26qiu4Hetqt_zcgz-PcQhPseVP',
+              passCode: '123456'
+            }
+          },
+          response: 'success'
+        },
+        execute: function (test) {
+          var factor = _.find(test.trans.factors, {id: 'uftigiEmYTPOmvqTS0g3'});
+          return factor.verify({
+            passCode: '123456',
+            autoPush: null,
             rememberDevice: true
           });
         }
