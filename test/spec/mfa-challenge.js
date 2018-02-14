@@ -132,6 +132,71 @@ define(function(require) {
       });
 
       util.itMakesCorrectRequestResponse({
+        title: 'allows verification when autoPush function returns truthy value',
+        setup: {
+          status: 'mfa-challenge-sms',
+          request: {
+            uri: '/api/v1/authn/factors/smsigwDlH85L9FyQK0g3/verify?autoPush=true',
+            data: {
+              stateToken: '00rt1IY9c6Q3RVc4a2jJPbS2uAtFNWJz_d8A26KTdF',
+              passCode: '123456'
+            }
+          },
+          response: 'success'
+        },
+        execute: function (test) {
+          return test.trans.verify({
+            passCode: '123456',
+            autoPush: function () {
+              return 'test';
+            }
+          });
+        }
+      });
+
+      util.itMakesCorrectRequestResponse({
+        title: 'allows verification when autoPush function returns falsy value',
+        setup: {
+          status: 'mfa-challenge-sms',
+          request: {
+            uri: '/api/v1/authn/factors/smsigwDlH85L9FyQK0g3/verify?autoPush=false',
+            data: {
+              stateToken: '00rt1IY9c6Q3RVc4a2jJPbS2uAtFNWJz_d8A26KTdF',
+              passCode: '123456'
+            }
+          },
+          response: 'success'
+        },
+        execute: function (test) {
+          return test.trans.verify({
+            passCode: '123456',
+            autoPush: function () {
+              return '';
+            }
+          });
+        }
+      });
+
+      util.itErrorsCorrectly({
+        title: 'throws an error when autoPush function throws an error',
+        setup: {
+          status: 'mfa-challenge-sms'
+        },
+        execute: function (test) {
+          return test.trans.verify({
+            passCode: '123456',
+            autoPush: function () {
+              throw new Error('test');
+            }
+          });
+        },
+        expectations: function (test, err) {
+          expect(err.name).toEqual('AuthSdkError');
+          expect(err.errorSummary).toEqual('AutoPush resulted in an error.');
+        }
+      });
+
+      util.itMakesCorrectRequestResponse({
         title: 'allows verification with autoPush as undefined',
         setup: {
           status: 'mfa-challenge-sms',
@@ -469,6 +534,113 @@ define(function(require) {
               return true;
             }
           });
+        }
+      });
+
+      util.itMakesCorrectRequestResponse({
+        title: 'allows polling for push when autoPush function returns truthy value',
+        setup: {
+          status: 'mfa-challenge-push',
+          calls: [
+            {
+              request: {
+                uri: '/api/v1/authn/factors/opf492vmb3s1blLTs0h7/verify?autoPush=true',
+                data: {
+                  stateToken: '00T4jcVNRzJy5dkWJ4P7c9051dY3FUYY9O2zvbU_vI'
+                }
+              },
+              response: 'mfa-challenge-push'
+            },
+            {
+              request: {
+                uri: '/api/v1/authn/factors/opf492vmb3s1blLTs0h7/verify?autoPush=true',
+                data: {
+                  stateToken: '00T4jcVNRzJy5dkWJ4P7c9051dY3FUYY9O2zvbU_vI'
+                }
+              },
+              response: 'mfa-challenge-push'
+            },
+            {
+              request: {
+                uri: '/api/v1/authn/factors/opf492vmb3s1blLTs0h7/verify?autoPush=true',
+                data: {
+                  stateToken: '00T4jcVNRzJy5dkWJ4P7c9051dY3FUYY9O2zvbU_vI'
+                }
+              },
+              response: 'success'
+            }
+          ]
+        },
+        execute: function (test) {
+          return test.trans.poll({
+            delay: 0,
+            autoPush: function () {
+              return 'test';
+            }
+          });
+        }
+      });
+
+      util.itMakesCorrectRequestResponse({
+        title: 'allows polling for push when autoPush function returns falsy value',
+        setup: {
+          status: 'mfa-challenge-push',
+          calls: [
+            {
+              request: {
+                uri: '/api/v1/authn/factors/opf492vmb3s1blLTs0h7/verify?autoPush=false',
+                data: {
+                  stateToken: '00T4jcVNRzJy5dkWJ4P7c9051dY3FUYY9O2zvbU_vI'
+                }
+              },
+              response: 'mfa-challenge-push'
+            },
+            {
+              request: {
+                uri: '/api/v1/authn/factors/opf492vmb3s1blLTs0h7/verify?autoPush=false',
+                data: {
+                  stateToken: '00T4jcVNRzJy5dkWJ4P7c9051dY3FUYY9O2zvbU_vI'
+                }
+              },
+              response: 'mfa-challenge-push'
+            },
+            {
+              request: {
+                uri: '/api/v1/authn/factors/opf492vmb3s1blLTs0h7/verify?autoPush=false',
+                data: {
+                  stateToken: '00T4jcVNRzJy5dkWJ4P7c9051dY3FUYY9O2zvbU_vI'
+                }
+              },
+              response: 'success'
+            }
+          ]
+        },
+        execute: function (test) {
+          return test.trans.poll({
+            delay: 0,
+            autoPush: function () {
+              return '';
+            }
+          });
+        }
+      });
+
+      util.itErrorsCorrectly({
+        title: 'throws an error when autoPush function throws an error during polling',
+        setup: {
+          status: 'mfa-challenge-push'
+        },
+        execute: function (test) {
+          return test.trans.poll({
+            delay: 0,
+            autoPush: function () {
+              throw new Error('test');
+            }
+          });
+        },
+        expectations: function (test, err) {
+          expect(err.name).toEqual('AuthSdkError');
+          expect(err.errorSummary).toEqual('AutoPush resulted in an error.');
         }
       });
 

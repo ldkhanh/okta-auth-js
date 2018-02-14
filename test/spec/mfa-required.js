@@ -173,6 +173,71 @@ define(function(require) {
         }
       });
       util.itMakesCorrectRequestResponse({
+        title: 'passes autoPush as a boolean query param if function returns a truthy value',
+        setup: {
+          status: 'mfa-required',
+          request: {
+            uri: '/api/v1/authn/factors/uftigiEmYTPOmvqTS0g3/verify?autoPush=true',
+            data: {
+              stateToken: '004KscPNUS2LswGp26qiu4Hetqt_zcgz-PcQhPseVP',
+              passCode: '123456'
+            }
+          },
+          response: 'success'
+        },
+        execute: function (test) {
+          var factor = _.find(test.trans.factors, {id: 'uftigiEmYTPOmvqTS0g3'});
+          return factor.verify({
+            'passCode': '123456',
+            'autoPush': function() {
+              return 'test';
+            }
+          });
+        }
+      });
+      util.itMakesCorrectRequestResponse({
+        title: 'passes autoPush as a boolean query param if function returns a falsy value',
+        setup: {
+          status: 'mfa-required',
+          request: {
+            uri: '/api/v1/authn/factors/uftigiEmYTPOmvqTS0g3/verify?autoPush=false',
+            data: {
+              stateToken: '004KscPNUS2LswGp26qiu4Hetqt_zcgz-PcQhPseVP',
+              passCode: '123456'
+            }
+          },
+          response: 'success'
+        },
+        execute: function (test) {
+          var factor = _.find(test.trans.factors, {id: 'uftigiEmYTPOmvqTS0g3'});
+          return factor.verify({
+            'passCode': '123456',
+            'autoPush': function() {
+              return '';
+            }
+          });
+        }
+      });
+      util.itErrorsCorrectly({
+        title: 'throws an error when autoPush function throws an error',
+        setup: {
+          status: 'mfa-required'
+        },
+        execute: function (test) {
+          var factor = _.find(test.trans.factors, {id: 'uftigiEmYTPOmvqTS0g3'});
+          return factor.verify({
+            'passCode': '123456',
+            'autoPush': function () {
+              throw new Error('test');
+            }
+          });
+        },
+        expectations: function (test, err) {
+          expect(err.name).toEqual('AuthSdkError');
+          expect(err.errorSummary).toEqual('AutoPush resulted in an error.');
+        }
+      });
+      util.itMakesCorrectRequestResponse({
         title: 'doesn\'t pass autoPush as a query param if undefined',
         setup: {
           status: 'mfa-required',
